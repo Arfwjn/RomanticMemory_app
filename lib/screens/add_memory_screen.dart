@@ -1,14 +1,14 @@
+// lib/screens/add_memory_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
 import '../controllers/memory_controller.dart';
-// import '../controllers/auth_controller.dart'; // Hapus atau comment jika belum ada
 import '../models/memory.dart';
 import '../services/audio_service.dart';
 import '../services/location_service.dart';
-import '../services/database_service.dart'; // Ganti ke DatabaseService
+import '../services/database_service.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../utils/constants.dart';
@@ -24,9 +24,8 @@ class AddMemoryScreen extends StatefulWidget {
 class _AddMemoryScreenState extends State<AddMemoryScreen> {
   final formKey = GlobalKey<FormState>();
   final imagePicker = ImagePicker();
-  final databaseService = DatabaseService(); // Ganti ke DatabaseService
+  final databaseService = DatabaseService();
   final memoryController = Get.find<MemoryController>();
-  // final authController = Get.find<AuthController>(); // Comment dulu
 
   late TextEditingController titleController;
   late TextEditingController descriptionController;
@@ -137,20 +136,20 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
     setState(() => isSaving = true);
 
     try {
-      // Simpan path lokal saja, tidak perlu upload ke Firebase
       String? imageUrl = selectedImage?.path;
       String? audioUrl = recordingPath;
 
       double? latitude;
       double? longitude;
 
-      // Opsional: Validasi lokasi jika perlu
       if (currentLocation != null && currentLocation!.isNotEmpty) {
         try {
           final latLng =
               await LocationService.getCoordinatesFromAddress(currentLocation!);
-          latitude = latLng?.latitude;
-          longitude = latLng?.longitude;
+          if (latLng != null) {
+            latitude = latLng.latitude;
+            longitude = latLng.longitude;
+          }
         } catch (e) {
           print("Location coordinate error: $e");
         }
@@ -165,7 +164,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
       );
 
       final memory = Memory(
-        userId: 'local_user', // Hardcode user id untuk lokal
+        userId: 'local_user',
         title: titleController.text,
         description: descriptionController.text,
         imageUrl: imageUrl,
@@ -177,7 +176,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
       );
 
       await databaseService.createMemory(memory);
-      memoryController.loadMemories();
+      await memoryController.loadMemories();
 
       Get.back();
       Get.snackbar('Success', 'Memory saved successfully!',
@@ -190,7 +189,6 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
     }
   }
 
-  // ... (Sisa kode Dispose dan Build UI tetap sama seperti file asli Anda)
   @override
   void dispose() {
     titleController.dispose();
@@ -203,12 +201,11 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ... Copy paste bagian build dari file asli Anda di sini ...
-    // Pastikan import di atas sudah benar. Kode UI Anda tidak perlu diubah signifikan.
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        // ... kode appbar sama ...
+        backgroundColor: AppColors.background,
+        elevation: 0,
         title: const Text('New Memory',
             style: TextStyle(color: AppColors.darkText)),
         leading: IconButton(
@@ -223,12 +220,12 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Bagian Photo
+                // Photo Section
                 GestureDetector(
                   onTap: _pickImage,
                   child: Container(
                     height: 240,
-                    width: double.infinity, // Tambahkan width infinity
+                    width: double.infinity,
                     decoration: BoxDecoration(
                       color: AppColors.lightPink,
                       borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -261,23 +258,27 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                           ),
                   ),
                 ),
-                // ... Sisa UI sama persis dengan kode Anda ...
                 const SizedBox(height: AppSpacing.lg),
+
+                // Title Field
                 CustomTextField(
                     label: 'Memory Title',
-                    hint: 'e.g., Sunset',
+                    hint: 'e.g., Sunset at the Beach',
                     controller: titleController,
                     validator: Validators.validateTitle),
                 const SizedBox(height: AppSpacing.md),
+
+                // Description Field
                 CustomTextField(
                     label: 'Tell your story',
-                    hint: 'Share the story...',
+                    hint: 'Share the story behind this memory...',
                     controller: descriptionController,
                     maxLines: 4,
                     minLines: 3,
                     validator: Validators.validateDescription),
                 const SizedBox(height: AppSpacing.lg),
-                // Date logic... (sama)
+
+                // Date and Time Pickers
                 Row(
                   children: [
                     Expanded(
@@ -293,7 +294,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                             const Icon(Icons.calendar_today,
                                 color: AppColors.primary),
                             const SizedBox(width: AppSpacing.sm),
-                            Text(dateController.text)
+                            Expanded(child: Text(dateController.text))
                           ]),
                         ),
                       ),
@@ -312,15 +313,36 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                             const Icon(Icons.schedule,
                                 color: AppColors.primary),
                             const SizedBox(width: AppSpacing.sm),
-                            Text(timeController.text)
+                            Expanded(child: Text(timeController.text))
                           ]),
                         ),
                       ),
                     ),
                   ],
                 ),
-                // Location and Audio UI logic... (sama)
                 const SizedBox(height: AppSpacing.lg),
+
+                // Location Button
+                GestureDetector(
+                  onTap: _getCurrentLocation,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md, vertical: AppSpacing.lg),
+                    decoration: BoxDecoration(
+                        color: AppColors.lightGreen,
+                        borderRadius: BorderRadius.circular(AppRadius.md)),
+                    child: Row(children: [
+                      const Icon(Icons.location_on, color: AppColors.primary),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Text(currentLocation ?? 'Add Location'),
+                      )
+                    ]),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+
+                // Audio Recording
                 GestureDetector(
                   onTap: isRecording ? _stopRecording : _startRecording,
                   child: Container(
@@ -335,11 +357,17 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                       Icon(isRecording ? Icons.stop : Icons.mic,
                           color: AppColors.primary),
                       const SizedBox(width: AppSpacing.md),
-                      Text(isRecording ? 'Stop Recording' : 'Record Voice Note')
+                      Text(isRecording
+                          ? 'Stop Recording'
+                          : recordingPath != null
+                              ? 'Audio Recorded ✓'
+                              : 'Record Voice Note')
                     ]),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
+
+                // Save Button
                 CustomButton(
                     label: 'Save Forever',
                     onPressed: _saveMemory,

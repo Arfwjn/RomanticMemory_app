@@ -25,7 +25,6 @@ class MemoryCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.lg),
           boxShadow: const [AppShadows.subtle],
           color: AppColors.cardBackground,
-          overflow: Clip.antiAlias,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

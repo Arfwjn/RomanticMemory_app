@@ -24,7 +24,7 @@ class MemoryController extends GetxController {
   }
 
   /// Load all memories from database
-  void loadMemories() async {
+  Future<void> loadMemories() async {
     isLoading(true);
     try {
       final data = await databaseService.getMemories(userId);
@@ -167,6 +167,7 @@ class MemoryController extends GetxController {
   }
 
   /// Refresh memories
+  @override
   Future<void> refresh() async {
     await loadMemories();
   }

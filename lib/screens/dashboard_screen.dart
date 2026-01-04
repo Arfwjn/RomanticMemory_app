@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../controllers/memory_controller.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/memory_card.dart';
