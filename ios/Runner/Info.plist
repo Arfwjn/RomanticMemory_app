@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Romantic Memory App</string>
+	<string>Memories Favorite</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -45,5 +45,17 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- Permissions untuk iOS -->
+	<key>NSCameraUsageDescription</key>
+	<string>We need camera access to capture your precious moments</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need photo library access to select images for your memories</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need microphone access to record voice notes</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need location access to tag where your memories were created</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need location access to tag where your memories were created</string>
 </dict>
 </plist>

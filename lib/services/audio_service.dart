@@ -1,157 +1,113 @@
-import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:record/record.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import '../models/memory.dart';
-import '../utils/constants.dart';
 
-class MemoryCard extends StatelessWidget {
-  final Memory memory;
-  final VoidCallback onTap;
-  final VoidCallback? onFavoriteTap;
+class AudioService {
+  static final AudioPlayer _audioPlayer = AudioPlayer();
+  static final AudioRecorder _recorder = AudioRecorder();
+  static String? _currentRecordingPath;
 
-  const MemoryCard({
-    Key? key,
-    required this.memory,
-    required this.onTap,
-    this.onFavoriteTap,
-  }) : super(key: key);
+  // Recording methods
+  static Future<bool> startRecording() async {
+    try {
+      // Cek permission
+      if (await _recorder.hasPermission()) {
+        final directory = await getApplicationDocumentsDirectory();
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        _currentRecordingPath = '${directory.path}/audio_$timestamp.m4a';
 
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          boxShadow: const [AppShadows.subtle],
-          color: AppColors.cardBackground,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image Logic: Prioritaskan File Lokal
-            if (memory.imageUrl != null && memory.imageUrl!.isNotEmpty)
-              ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(12)),
-                child: Image.file(
-                  File(memory.imageUrl!),
-                  height: 150,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (ctx, err, stack) => Container(
-                    height: 150,
-                    width: double.infinity,
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.broken_image, color: Colors.grey),
-                  ),
-                ),
-              )
-            else
-              Container(
-                height: 150, // Samakan tinggi
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: AppColors.lightPink,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(AppRadius.lg),
-                    topRight: Radius.circular(AppRadius.lg),
-                  ),
-                ),
-                child: const Center(
-                  child:
-                      Icon(Icons.image, color: AppColors.lightText, size: 40),
-                ),
-              ),
-
-            // Location badge
-            if (memory.location != null && memory.location!.isNotEmpty)
-              Padding(
-                // Gunakan Padding/Row alih-alih Positioned jika tidak dalam Stack
-                padding: const EdgeInsets.only(left: 12, top: 12),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(8)),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.location_on,
-                          size: 12, color: AppColors.primary),
-                      const SizedBox(width: 4),
-                      Flexible(
-                          child: Text(memory.location!,
-                              style: const TextStyle(fontSize: 10),
-                              overflow: TextOverflow.ellipsis)),
-                    ],
-                  ),
-                ),
-              ),
-
-            // Content
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          memory.title,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.darkText,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (onFavoriteTap != null)
-                        GestureDetector(
-                          onTap: onFavoriteTap,
-                          child: Icon(
-                            memory.isFavorite
-                                ? Icons.favorite
-                                : Icons.favorite_border,
-                            color: AppColors.primary,
-                            size: 20,
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    _formatDate(memory.date),
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.mediumText,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+        await _recorder.start(
+          const RecordConfig(
+            encoder: AudioEncoder.aacLc,
+            bitRate: 128000,
+            sampleRate: 44100,
+          ),
+          path: _currentRecordingPath!,
+        );
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Error starting recording: $e');
+      return false;
+    }
   }
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays == 0) {
-      return 'Today';
-    } else if (difference.inDays == 1) {
-      return 'Yesterday';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
-    } else {
-      return '${date.day}/${date.month}/${date.year}';
+  static Future<String?> stopRecording() async {
+    try {
+      final path = await _recorder.stop();
+      return path ?? _currentRecordingPath;
+    } catch (e) {
+      print('Error stopping recording: $e');
+      return null;
     }
+  }
+
+  static Future<void> cancelRecording() async {
+    try {
+      await _recorder.stop();
+      if (_currentRecordingPath != null) {
+        final file = File(_currentRecordingPath!);
+        if (await file.exists()) {
+          await file.delete();
+        }
+      }
+      _currentRecordingPath = null;
+    } catch (e) {
+      print('Error canceling recording: $e');
+    }
+  }
+
+  // Playback methods
+  static Future<void> playAudio(String path) async {
+    try {
+      await _audioPlayer.play(DeviceFileSource(path));
+    } catch (e) {
+      print('Error playing audio: $e');
+    }
+  }
+
+  static Future<void> pauseAudio() async {
+    try {
+      await _audioPlayer.pause();
+    } catch (e) {
+      print('Error pausing audio: $e');
+    }
+  }
+
+  static Future<void> stopAudio() async {
+    try {
+      await _audioPlayer.stop();
+    } catch (e) {
+      print('Error stopping audio: $e');
+    }
+  }
+
+  static Future<void> seekAudio(Duration position) async {
+    try {
+      await _audioPlayer.seek(position);
+    } catch (e) {
+      print('Error seeking audio: $e');
+    }
+  }
+
+  // Stream getters
+  static Stream<Duration> getDurationStream() {
+    return _audioPlayer.onDurationChanged;
+  }
+
+  static Stream<Duration> getPositionStream() {
+    return _audioPlayer.onPositionChanged;
+  }
+
+  static Stream<PlayerState> getPlayerStateStream() {
+    return _audioPlayer.onPlayerStateChanged;
+  }
+
+  // Cleanup
+  static Future<void> dispose() async {
+    await _audioPlayer.dispose();
+    await _recorder.dispose();
   }
 }
