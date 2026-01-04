@@ -17,25 +17,24 @@ dependencies:
   # Local Database & Storage
   sqflite: ^2.3.0
   path: ^1.8.3
-  path_provider: ^2.1.1 # Untuk menyimpan gambar/audio secara lokal
+  path_provider: ^2.1.1
 
   # Image & Camera
   image_picker: ^1.0.4
-  # flutter_image_compress: ... (opsional)
 
-  # Maps & Location (Tetap)
+  # Maps & Location
   google_maps_flutter: ^2.5.0
   geolocator: ^9.0.2
   geocoding: ^2.1.0
 
-  # Audio (Tetap)
+  # Audio (UPDATE VERSI INI)
   audioplayers: ^5.2.0
-  record: ^4.4.4
+  record: ^5.0.0
 
-  # UI Utilities (Tetap)
+  # UI Utilities
   intl: ^0.19.0
   cupertino_icons: ^1.0.2
-  cached_network_image: ^3.3.0 # Note: Ini mungkin perlu diganti Image.file untuk lokal
+  cached_network_image: ^3.3.0
   uuid: ^4.0.0
 
 dev_dependencies:
@@ -48,12 +47,3 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
-
-  fonts:
-    - family: Poppins
-      fonts:
-        - asset: assets/fonts/Poppins-Regular.ttf
-        - asset: assets/fonts/Poppins-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Poppins-Bold.ttf
-          weight: 700

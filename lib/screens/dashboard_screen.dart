@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../controllers/memory_controller.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/memory_card.dart';
@@ -14,7 +13,6 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final memoryController = Get.put(MemoryController());
-    final authController = Get.find<AuthController>();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -103,34 +101,36 @@ class DashboardScreen extends StatelessWidget {
             child: Row(
               children: [
                 Obx(() => FilterChip(
-                  label: const Text('All'),
-                  selected: memoryController.selectedFilter.value == 'all',
-                  onSelected: (selected) {
-                    if (selected) memoryController.setFilter('all');
-                  },
-                  backgroundColor: Colors.white,
-                  selectedColor: AppColors.primary,
-                  labelStyle: TextStyle(
-                    color: memoryController.selectedFilter.value == 'all'
-                        ? Colors.white
-                        : AppColors.darkText,
-                  ),
-                )),
+                      label: const Text('All'),
+                      selected: memoryController.selectedFilter.value == 'all',
+                      onSelected: (selected) {
+                        if (selected) memoryController.setFilter('all');
+                      },
+                      backgroundColor: Colors.white,
+                      selectedColor: AppColors.primary,
+                      labelStyle: TextStyle(
+                        color: memoryController.selectedFilter.value == 'all'
+                            ? Colors.white
+                            : AppColors.darkText,
+                      ),
+                    )),
                 const SizedBox(width: AppSpacing.sm),
                 Obx(() => FilterChip(
-                  label: const Text('Favorites'),
-                  selected: memoryController.selectedFilter.value == 'favorites',
-                  onSelected: (selected) {
-                    if (selected) memoryController.setFilter('favorites');
-                  },
-                  backgroundColor: Colors.white,
-                  selectedColor: AppColors.primary,
-                  labelStyle: TextStyle(
-                    color: memoryController.selectedFilter.value == 'favorites'
-                        ? Colors.white
-                        : AppColors.darkText,
-                  ),
-                )),
+                      label: const Text('Favorites'),
+                      selected:
+                          memoryController.selectedFilter.value == 'favorites',
+                      onSelected: (selected) {
+                        if (selected) memoryController.setFilter('favorites');
+                      },
+                      backgroundColor: Colors.white,
+                      selectedColor: AppColors.primary,
+                      labelStyle: TextStyle(
+                        color:
+                            memoryController.selectedFilter.value == 'favorites'
+                                ? Colors.white
+                                : AppColors.darkText,
+                      ),
+                    )),
               ],
             ),
           ),
