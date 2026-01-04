@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/memory.dart';
 import '../utils/constants.dart';
+import 'dart:io';
 
 class MemoryCard extends StatelessWidget {
   final Memory memory;
@@ -32,24 +33,17 @@ class MemoryCard extends StatelessWidget {
             // Image or placeholder
             if (memory.imageUrl != null)
               ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(AppRadius.lg),
-                  topRight: Radius.circular(AppRadius.lg),
-                ),
-                child: CachedNetworkImage(
-                  imageUrl: memory.imageUrl!,
-                  height: 200,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                child: Image.file(
+                  File(memory.imageUrl!),
+                  height: 150,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: AppColors.background,
-                    child: const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: AppColors.background,
-                    child: const Icon(Icons.image_not_supported),
+                  errorBuilder: (ctx, err, stack) => Container(
+                    // Handle jika file hilang
+                    height: 150,
+                    color: Colors.grey[300],
+                    child: Icon(Icons.broken_image),
                   ),
                 ),
               )
